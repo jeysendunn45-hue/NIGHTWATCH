@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080a0d">
+<title>NIGHTWATCH — Don't Look Away</title>
+<style>
+:root{color-scheme:dark;--red:#e34b55;--muted:#8d969d;--panel:#11161b;--line:#293138}
+*{box-sizing:border-box}body{margin:0;background:#07090b;color:#e8ecee;font:14px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;min-height:100vh}button{font:inherit;color:inherit;background:#171d22;border:1px solid #3a444c;padding:11px 15px;cursor:pointer;letter-spacing:.06em;text-transform:uppercase}button:hover,button:focus-visible{border-color:var(--red);outline:none}button:disabled{opacity:.35;cursor:not-allowed}.shell{max-width:1100px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:0 0 14px;margin-bottom:18px}.brand{font-size:20px;letter-spacing:.22em;font-weight:900}.brand b{color:var(--red)}.status{color:var(--muted);font-size:11px;letter-spacing:.12em}.status span{color:var(--red)}.layout{display:grid;grid-template-columns:minmax(0,1fr) 235px;gap:14px}.screen{position:relative;background:#050607;border:1px solid #343c42;overflow:hidden;min-height:400px;aspect-ratio:4/3}canvas{display:block;width:100%;height:100%;position:absolute;inset:0;image-rendering:pixelated}.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(7,10,12,.77),rgba(0,0,0,.95));z-index:3}.overlay h1{font-size:clamp(32px,7vw,62px);letter-spacing:.18em;margin:0;color:#f1f1ed;text-shadow:0 0 26px #8f222b}.overlay p{max-width:440px;color:#aab1b6}.eyebrow{color:var(--red);letter-spacing:.22em;font-size:11px}.overlay .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}.primary{background:#8c252e;border-color:#b8454e}.side{display:flex;flex-direction:column;gap:10px}.panel{background:var(--panel);border:1px solid var(--line);padding:13px}.panel h2{font-size:11px;color:var(--muted);letter-spacing:.16em;margin:0 0 10px}.big{font-size:22px;font-weight:bold}.meter{height:6px;background:#293037;margin-top:7px}.meter i{display:block;height:100%;width:100%;background:#a9c7a0;transition:width .2s}.meter.red i{background:var(--red)}.objective{display:flex;gap:9px;margin:8px 0;color:#b8c0c5}.objective .mark{color:var(--red)}.objective.done{color:#829c82}.objective.done .mark{color:#9cc49c}.log{height:88px;overflow:hidden;color:#9ba5ab;font-size:11px}.log div{padding:3px 0;border-bottom:1px solid #20272c}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.controls button{flex:1;min-width:90px;font-size:11px}.foot{display:flex;justify-content:space-between;gap:12px;color:#657078;font-size:10px;margin-top:12px;letter-spacing:.08em}.touch{display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,42px);gap:4px;justify-content:center;margin-top:10px}.touch button{padding:0;font-size:18px}.touch button:nth-child(1){grid-column:2}.touch button:nth-child(2){grid-column:1;grid-row:2}.touch button:nth-child(3){grid-column:2;grid-row:2}.touch button:nth-child(4){grid-column:3;grid-row:2}.hide{display:none!important}.small{font-size:11px;color:var(--muted)}@media(max-width:760px){.shell{padding:12px}.layout{grid-template-columns:1fr}.screen{min-height:300px}.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.side .panel:last-child{grid-column:1/-1}.touch{display:grid}.top{align-items:flex-start}.brand{font-size:17px}.status{text-align:right;max-width:140px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top"><div class="brand">NIGHT<b>WATCH</b></div><div class="status">FIELD UNIT 07 // <span id="topStatus">SIGNAL LOST</span></div></header>
+<div class="layout">
+<main>
+<div class="screen" id="screen"><canvas id="game" aria-label="NIGHTWATCH game view"></canvas>
+<div class="overlay" id="menu"><div class="eyebrow">NIGHT SHIFT // 02:13 AM</div><h1>NIGHTWATCH</h1><p>The station has lost power. Three backup fuses are scattered around the grounds. Find them, restore the gate, and leave before the thing outside learns your route.</p><p><b>RULE ZERO:</b> It moves when you aren't looking. Your flashlight can hold it back—but the battery won't last forever.</p><div class="actions"><button class="primary" id="start">Begin night shift</button><button id="how">Controls</button></div><p class="small" id="help" hidden>Move: WASD / arrows · Aim: mouse · F: flashlight · SPACE: throw a noise lure (2) · E: interact with exit</p></div>
+<div class="overlay hide" id="end"><div class="eyebrow" id="endEyebrow">SHIFT ENDED</div><h1 id="endTitle">YOU ESCAPED</h1><p id="endText"></p><div class="actions"><button class="primary" id="again">Try again</button><button id="menuBtn">Main menu</button></div></div>
+</div>
+<div class="controls"><button id="lightBtn">F · Flashlight: ON</button><button id="lureBtn">SPACE · Noise lure (2)</button><button id="camBtn">C · Motion trace</button><button id="pauseBtn">Pause</button></div>
+<div class="touch" aria-label="Touch movement controls"><button data-move="up">▲</button><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div>
+<div class="foot"><span>NO SIGNAL DOES NOT MEAN SAFE</span><span id="clock">02:13 AM</span><span>BUILD 0.1.0</span></div>
+</main>
+<aside class="side">
+<section class="panel"><h2>POWER CELL</h2><div class="big" id="batteryText">100%</div><div class="meter" id="batteryMeter"><i id="batteryBar"></i></div><div class="small" id="powerHint">Flashlight drains power</div></section>
+<section class="panel"><h2>OBJECTIVE</h2><div class="objective" id="fuse1"><span class="mark">[ ]</span><span>Backup fuse 01</span></div><div class="objective" id="fuse2"><span class="mark">[ ]</span><span>Backup fuse 02</span></div><div class="objective" id="fuse3"><span class="mark">[ ]</span><span>Backup fuse 03</span></div><div class="objective" id="exitTask"><span class="mark">[ ]</span><span>Unlock the south gate</span></div></section>
+<section class="panel"><h2>FIELD NOTES</h2><div class="log" id="log"><div>02:13 — Radio silence.</div><div>02:14 — Something tapped the glass.</div></div><div class="small">PROXIMITY</div><div class="meter red"><i id="threatBar" style="width:0%"></i></div><div class="small" id="threatText">No visual contact</div></section>
+<section class="panel"><h2>HOW TO SURVIVE</h2><div class="small">• Keep the beam on it to slow it down.<br>• It remembers your last position.<br>• Lures distract it for a few seconds.<br>• The gate only opens with all 3 fuses.</div></section>
+</aside>
+</div>
+</div>
+<script>
+(()=>{
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+let W=960,H=720,raf=0,last=0,running=false,paused=false,ended=false,showTrace=false;
+const keys={},touchKeys={};let mouse={x:650,y:360};
+const world={w:1600,h:1200};
+const player={x:160,y:160,r:13,speed:190,angle:0,battery:100,light:true,noise:2,invuln:0};
+const monster={x:1350,y:960,r:19,alert:0,stun:0,seen:false,mode:'search',targetX:160,targetY:160,step:0};
+const walls=[
+{x:290,y:70,w:45,h:350},{x:290,y:500,w:45,h:260},{x:290,y:860,w:45,h:250},
+{x:520,y:250,w:350,h:40},{x:520,y:250,w:40,h:220},{x:520,y:470,w:210,h:40},
+{x:760,y:470,w:40,h:300},{x:930,y:130,w:45,h:300},{x:930,y:520,w:45,h:260},
+{x:1070,y:650,w:340,h:42},{x:1120,y:860,w:42,h:250},{x:1300,y:160,w:40,h:260},
+{x:1300,y:420,w:200,h:40},{x:420,y:960,w:360,h:40},{x:640,y:1010,w:40,h:130}
+];
+const fuses=[{x:670,y:360,got:false},{x:1110,y:560,got:false},{x:470,y:850,got:false}];
+const exit={x:1510,y:1080};
+const decor=[];for(let i=0;i<90;i++){let x=(i*317+71)%world.w,y=(i*191+93)%world.h;decor.push({x,y,r:3+(i%5)*2})}
+function resize(){const r=canvas.getBoundingClientRect();const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d);W=canvas.width;H=canvas.height;ctx.setTransform(1,0,0,1,0,0)}
+new ResizeObserver(resize).observe(canvas);resize();
+function reset(){Object.assign(player,{x:160,y:160,battery:100,light:true,noise:2,invuln:0});Object.assign(monster,{x:1350,y:960,alert:0,stun:0,seen:false,mode:'search',targetX:160,targetY:160,step:0});fuses.forEach(f=>f.got=false);running=true;paused=false;ended=false;showTrace=false;last=performance.now();$('menu').classList.add('hide');$('end').classList.add('hide');$('topStatus').textContent='LIVE // NO BACKUP';$('log').innerHTML='<div>02:13 — Radio silence.</div><div>02:14 — Something tapped the glass.</div>';sync();cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);say('The gate is dead. Find the three backup fuses.')}
+function say(t){const d=document.createElement('div');d.textContent=t;$('log').prepend(d);while($('log').children.length>5)$('log').lastChild.remove()}
+function sync(){const n=fuses.filter(f=>f.got).length;fuses.forEach((f,i)=>{const e=$('fuse'+(i+1));e.classList.toggle('done',f.got);e.querySelector('.mark').textContent=f.got?'[✓]':'[ ]'});$('exitTask').classList.toggle('done',n===3);$('exitTask').querySelector('.mark').textContent=n===3?'[✓]':'[ ]';$('batteryText').textContent=Math.ceil(player.battery)+'%';$('batteryBar').style.width=player.battery+'%';$('batteryMeter').classList.toggle('red',player.battery<30);$('lightBtn').textContent='F · Flashlight: '+(player.light?'ON':'OFF');$('lureBtn').textContent='SPACE · Noise lure ('+player.noise+')';$('camBtn').textContent='C · Motion trace: '+(showTrace?'ON':'OFF')}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function circleRect(x,y,r,b){const px=clamp(x,b.x,b.x+b.w),py=clamp(y,b.y,b.y+b.h);return (x-px)**2+(y-py)**2<r*r}
+function blocked(x,y,r){if(x<r||y<r||x>world.w-r||y>world.h-r)return true;return walls.some(b=>circleRect(x,y,r,b))}
+function move(obj,dx,dy){if(!blocked(obj.x+dx,obj.y,obj.r))obj.x+=dx;if(!blocked(obj.x,obj.y+dy,obj.r))obj.y+=dy}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function inBeam(x,y){const dx=x-player.x,dy=y-player.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-player.angle),Math.cos(a-player.angle));return player.light&&player.battery>0&&d<360&&Math.abs(diff)<.47}
+function lineBlocked(x1,y1,x2,y2){for(let i=1;i<12;i++){let t=i/12,x=x1+(x2-x1)*t,y=y1+(y2-y1)*t;if(walls.some(b=>x>b.x&&x<b.x+b.w&&y>b.y&&y<b.y+b.h))return true}return false}
+function update(dt){if(!running||paused||ended)return;player.invuln=Math.max(0,player.invuln-dt);
+let mx=(keys.d||keys.arrowright||touchKeys.right?1:0)-(keys.a||keys.arrowleft||touchKeys.left?1:0),my=(keys.s||keys.arrowdown||touchKeys.down?1:0)-(keys.w||keys.arrowup||touchKeys.up?1:0);
+if(mx||my){let l=Math.hypot(mx,my);mx/=l;my/=l;move(player,mx*player.speed*dt,my*player.speed*dt);player.angle=Math.atan2(my,mx);monster.targetX=player.x;monster.targetY=player.y;monster.alert=Math.min(1,monster.alert+dt*.035)}
+const rect=canvas.getBoundingClientRect();const sx=canvas.width/rect.width,sy=canvas.height/rect.height;const camx=clamp(player.x-W/(2*sx),0,world.w-W/sx),camy=clamp(player.y-H/(2*sy),0,world.h-H/sy);
+const px=mouse.x*sx+camx,py=mouse.y*sy+camy;if(mouse.active)player.angle=Math.atan2(py-player.y,px-player.x);
+if(player.light&&player.battery>0)player.battery=Math.max(0,player.battery-dt*2.05);else player.battery=Math.min(100,player.battery+dt*.45);
+const d=dist(player,monster),seen=inBeam(monster.x,monster.y)&&!lineBlocked(player.x,player.y,monster.x,monster.y);monster.seen=seen;
+if(seen){monster.stun=Math.min(1.2,monster.stun+dt);monster.alert=Math.max(0,monster.alert-dt*.12)}else{monster.stun=Math.max(0,monster.stun-dt);monster.alert=Math.min(1,monster.alert+dt*(d<350?.18:.035))}
+let tx=monster.targetX,ty=monster.targetY;if(monster.mode==='lured'&&monster.lureUntil>Date.now()){tx=monster.lureX;ty=monster.lureY}else{monster.mode='hunt';if(d<500){tx=player.x;ty=player.y}}
+if(monster.stun<.18){let dx=tx-monster.x,dy=ty-monster.y,l=Math.hypot(dx,dy)||1;let speed=(d<300?88:53)*(1+monster.alert*.55);if(!seen)move(monster,dx/l*speed*dt,dy/l*speed*dt)}
+if(d<player.r+monster.r+4&&player.invuln<=0){finish(false);return}
+fuses.forEach((f,i)=>{if(!f.got&&dist(player,f)<34){f.got=true;say('Fuse '+(i+1)+' recovered. Something heard the click.');monster.alert=Math.min(1,monster.alert+.24);sync()}});
+if(dist(player,exit)<45){if(fuses.every(f=>f.got)){finish(true);return}else if(!exit.warned){say('Gate locked. '+fuses.filter(f=>!f.got).length+' fuse(s) still missing.');exit.warned=true}}
+$('threatBar').style.width=(clamp(1-d/560,0,1)*100)+'%';$('threatText').textContent=d<150?'TOO CLOSE':d<300?'MOVEMENT NEARBY':seen?'BEAM CONTACT':'No visual contact';
+const seconds=Math.floor(performance.now()/1000)%60,minutes=13+Math.floor(performance.now()/60000);$('clock').textContent='02:'+String(minutes%60).padStart(2,'0')+':'+String(seconds).padStart(2,'0');sync()}
+function draw(){const rect=canvas.getBoundingClientRect(),sx=canvas.width/rect.width,sy=canvas.height/rect.height;ctx.setTransform(sx,0,0,sy,0,0);const vw=rect.width,vh=rect.height;const camx=clamp(player.x-vw/2,0,world.w-vw),camy=clamp(player.y-vh/2,0,world.h-vh);ctx.clearRect(0,0,vw,vh);ctx.fillStyle='#0c1112';ctx.fillRect(0,0,vw,vh);ctx.save();ctx.translate(-camx,-camy);
+ctx.fillStyle='#111817';ctx.fillRect(0,0,world.w,world.h);
+ctx.strokeStyle='#182322';ctx.lineWidth=1;for(let x=0;x<world.w;x+=48){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,world.h);ctx.stroke()}for(let y=0;y<world.h;y+=48){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(world.w,y);ctx.stroke()}
+decor.forEach(t=>{ctx.fillStyle='#19201d';ctx.beginPath();ctx.arc(t.x,t.y,t.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#222b26';ctx.stroke()});
+ctx.fillStyle='#262d2c';walls.forEach(b=>{ctx.fillRect(b.x,b.y,b.w,b.h);ctx.strokeStyle='#3b4440';ctx.strokeRect(b.x,b.y,b.w,b.h);ctx.fillStyle='#202725';for(let x=b.x+8;x<b.x+b.w-4;x+=18)ctx.fillRect(x,b.y+5,3,Math.max(2,b.h-10));ctx.fillStyle='#262d2c'});
+// gate and fuses
+ctx.fillStyle=fuses.every(f=>f.got)?'#547e5b':'#682d32';ctx.fillRect(exit.x-28,exit.y-8,56,16);ctx.fillStyle='#b4b9a7';ctx.fillRect(exit.x-23,exit.y-3,46,6);
+fuses.forEach((f,i)=>{if(f.got)return;ctx.save();ctx.translate(f.x,f.y);ctx.shadowBlur=18;ctx.shadowColor='#d8b16c';ctx.fillStyle='#d8b16c';ctx.fillRect(-8,-8,16,16);ctx.fillStyle='#292116';ctx.fillRect(-3,-5,6,10);ctx.restore()});
+if(showTrace){ctx.strokeStyle='rgba(223,78,86,.45)';ctx.setLineDash([8,8]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(monster.x,monster.y);ctx.lineTo(monster.targetX,monster.targetY);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#e34b55';ctx.beginPath();ctx.arc(monster.x,monster.y,monster.r+10,0,Math.PI*2);ctx.stroke();}
+// monster, a tall angular silhouette
+ctx.save();ctx.translate(monster.x,monster.y);ctx.rotate(Math.atan2(player.y-monster.y,player.x-monster.x));ctx.fillStyle='#020303';ctx.shadowBlur=monster.seen?24:8;ctx.shadowColor=monster.seen?'#d34b53':'#000';ctx.beginPath();ctx.ellipse(0,0,14,25,0,0,Math.PI*2);ctx.fill();ctx.fillRect(-8,-22,16,25);ctx.beginPath();ctx.moveTo(-7,-19);ctx.lineTo(-13,-42);ctx.lineTo(-2,-25);ctx.moveTo(7,-19);ctx.lineTo(13,-42);ctx.lineTo(2,-25);ctx.fill();ctx.fillStyle=monster.seen?'#ffb2a6':'#7b2229';ctx.fillRect(-7,-9,4,3);ctx.fillRect(3,-9,4,3);ctx.restore();
+// player
+ctx.fillStyle='#a9b8ac';ctx.beginPath();ctx.arc(player.x,player.y,player.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#293c34';ctx.beginPath();ctx.arc(player.x,player.y,5,0,Math.PI*2);ctx.fill();
+ctx.restore();
+// darkness and flashlight cone
+ctx.fillStyle='rgba(0,0,0,'+(player.light&&player.battery>0?'.91':'.965')+')';ctx.fillRect(0,0,vw,vh);
+const ux=player.x-camx,uy=player.y-camy;
+if(player.light&&player.battery>0){ctx.save();ctx.globalCompositeOperation='destination-out';let g=ctx.createRadialGradient(ux,uy,8,ux,uy,350);g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.58,'rgba(0,0,0,.92)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(ux,uy,350,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.moveTo(ux,uy);ctx.arc(ux,uy,380,player.angle-.43,player.angle+.43);ctx.closePath();ctx.fillStyle='rgba(0,0,0,.9)';ctx.fill();ctx.restore();}
+// soft flashlight overlay
+if(player.light&&player.battery>0){let g=ctx.createRadialGradient(ux,uy,0,ux,uy,370);g.addColorStop(0,'rgba(197,211,177,.09)');g.addColorStop(1,'rgba(197,211,177,0)');ctx.fillStyle=g;ctx.fillRect(0,0,vw,vh)}
+// vignette, scan lines, grain
+let vg=ctx.createRadialGradient(vw/2,vh/2,vh*.12,vw/2,vh/2,vw*.72);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.72)');ctx.fillStyle=vg;ctx.fillRect(0,0,vw,vh);ctx.fillStyle='rgba(180,210,190,.035)';for(let y=0;y<vh;y+=4)ctx.fillRect(0,y,vw,1);
+if(monster.seen){ctx.fillStyle='rgba(145,25,35,.08)';ctx.fillRect(0,0,vw,vh)}
+if(paused){ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillRect(0,0,vw,vh);ctx.fillStyle='#eee';ctx.font='bold 24px monospace';ctx.textAlign='center';ctx.fillText('SIGNAL PAUSED',vw/2,vh/2)}
+}
+function loop(now){if(!running)return;const dt=Math.min(.04,(now-last)/1000||0);last=now;update(dt);draw();if(running)raf=requestAnimationFrame(loop)}
+function finish(win){ended=true;running=false;$('end').classList.remove('hide');$('endEyebrow').textContent=win?'SHIFT COMPLETE':'CONNECTION LOST';$('endTitle').textContent=win?'YOU ESCAPED':'IT FOUND YOU';$('endText').textContent=win?'The gate groans open. Behind you, the radio whispers your name. You made it out… this time.':'The flashlight goes dark. In the silence, you hear a second set of footsteps matching yours.';$('topStatus').textContent=win?'SHIFT COMPLETE':'SIGNAL LOST';}
+function toggleLight(){if(!running||ended)return;player.light=!player.light;say(player.light?'Flashlight on. Keep the beam steady.':'Flashlight off. You hear movement.');sync()}
+function lure(){if(!running||paused||ended||player.noise<=0)return;player.noise--;monster.mode='lured';monster.lureX=player.x+Math.cos(player.angle)*240;monster.lureY=player.y+Math.sin(player.angle)*240;monster.lureUntil=Date.now()+4200;monster.targetX=monster.lureX;monster.targetY=monster.lureY;say('Metal clatters in the dark. It is moving toward the sound.');sync()}
+function togglePause(){if(!running||ended)return;paused=!paused;$('pauseBtn').textContent=paused?'Resume':'Pause';last=performance.now()}
+$('start').onclick=reset;$('again').onclick=reset;$('menuBtn').onclick=()=>{$('end').classList.add('hide');$('menu').classList.remove('hide');$('topStatus').textContent='SIGNAL LOST'};$('how').onclick=()=>{$('help').hidden=!$('help').hidden};$('lightBtn').onclick=toggleLight;$('lureBtn').onclick=lure;$('camBtn').onclick=()=>{showTrace=!showTrace;sync();say(showTrace?'Motion trace enabled. The sensor is unreliable.':'Motion trace disabled.')};$('pauseBtn').onclick=togglePause;
+document.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k))e.preventDefault();keys[k]=true;if(e.repeat)return;if(k==='f')toggleLight();if(k===' ')lure();if(k==='c'){showTrace=!showTrace;sync()}if(k==='escape')togglePause();if(k==='e'&&running&&fuses.every(f=>f.got)&&dist(player,exit)<65)finish(true)});
+document.addEventListener('keyup',e=>{keys[e.key.toLowerCase()]=false});
+canvas.addEventListener('mousemove',e=>{const r=canvas.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top,active:true}});
+canvas.addEventListener('touchstart',()=>{mouse.active=false},{passive:true});
+document.querySelectorAll('[data-move]').forEach(b=>{const k=b.dataset.move;const down=e=>{e.preventDefault();touchKeys[k]=true},up=e=>{e.preventDefault();touchKeys[k]=false};b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running&&!ended){paused=true;$('pauseBtn').textContent='Resume'}});
+draw();
+})();
+</script>
+</body>
+</html>
